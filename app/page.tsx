@@ -10,6 +10,7 @@ import {
   FileBadge,
   FileText,
   LayoutDashboard,
+  Menu,
   Plus,
   Search,
   Users,
@@ -315,15 +316,30 @@ export default function Page() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
     null,
   );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleMenuChange = (menu: MenuKey) => {
     setActiveMenu(menu);
     setSelectedEmployee(null);
+    setIsSidebarOpen(false);
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans text-gray-800">
-      <aside className="flex w-64 flex-col bg-slate-900 text-white transition-all duration-300">
+    <div className="min-h-dvh flex flex-col bg-gray-50 font-sans text-gray-800 md:flex-row">
+      {/* Mobile Drawer Backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-slate-950/50 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Drawer on mobile, fixed on desktop */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-slate-900 text-white transition-transform duration-300 md:relative md:translate-x-0 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="flex items-center gap-3 border-b border-slate-800 p-5">
           <div className="rounded-lg bg-blue-500 p-2">
             <Users className="h-6 w-6 text-white" />
@@ -354,19 +370,29 @@ export default function Page() {
       </aside>
 
       <main className="relative flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
-          <h2 className="text-xl font-semibold text-gray-800">
-            {menuTitles[activeMenu]}
-          </h2>
-          <div className="flex items-center gap-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="rounded-lg p-2 text-gray-700 hover:bg-gray-100 md:hidden"
+              aria-label="Toggle menu"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <h2 className="text-lg font-semibold text-gray-800 md:text-xl">
+              {menuTitles[activeMenu]}
+            </h2>
+          </div>
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600 md:text-base">
               A
             </div>
-            <span className="text-sm font-medium">แอดมิน HR</span>
+            <span className="hidden text-sm font-medium sm:inline">แอดมิน HR</span>
           </div>
         </header>
 
-        <div className="relative flex-1 overflow-auto p-6">
+        <div className="relative flex-1 overflow-auto p-4 md:p-6">
           {selectedEmployee ? (
             <EmployeeDetail
               employee={selectedEmployee}
@@ -383,8 +409,8 @@ export default function Page() {
 
 function DashboardView({ onNavigate }: DashboardViewProps) {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+    <div className="space-y-4 md:space-y-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4">
         {dashboardStats.map((stat) => (
           <StatCard
             key={stat.title}
@@ -397,7 +423,7 @@ function DashboardView({ onNavigate }: DashboardViewProps) {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-lg font-semibold">
@@ -471,24 +497,52 @@ function DashboardView({ onNavigate }: DashboardViewProps) {
 function EmployeeList({ onSelect }: EmployeeListProps) {
   return (
     <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-      <div className="flex flex-col justify-between gap-4 border-b border-gray-100 p-5 sm:flex-row sm:items-center">
-        <div className="relative">
+      <div className="flex flex-col justify-between gap-3 border-b border-gray-100 p-4 sm:gap-4 sm:p-5 md:flex-row md:items-center">
+        <div className="relative flex-1 md:flex-initial">
           <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="ค้นหาชื่อ, รหัสพนักงาน..."
-            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:w-80"
+            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 md:w-80"
           />
         </div>
         <button
           type="button"
-          className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+          className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
         >
           <Plus className="h-4 w-4" /> เพิ่มพนักงาน
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile Card View */}
+      <div className="divide-y divide-gray-100 md:hidden">
+        {mockEmployees.map((employee) => (
+          <div key={employee.id} className="p-4 hover:bg-gray-50">
+            <div className="mb-3 flex items-start justify-between">
+              <div>
+                <p className="font-medium text-gray-900">{employee.name}</p>
+                <p className="text-xs text-gray-500">{employee.id}</p>
+              </div>
+              <StatusBadge status={employee.status} />
+            </div>
+            <div className="mb-3 space-y-1 text-sm text-gray-600">
+              <p>{employee.position}</p>
+              <p className="text-xs text-gray-500">{employee.department}</p>
+              <p className="text-xs text-gray-500">เริ่มงาน: {employee.startDate}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onSelect(employee)}
+              className="w-full rounded-md bg-blue-50 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-100"
+            >
+              ดูข้อมูล
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50 text-sm text-gray-600">
@@ -546,25 +600,26 @@ function EmployeeDetail({ employee, onBack }: EmployeeDetailProps) {
       <button
         type="button"
         onClick={onBack}
-        className="mb-4 flex items-center gap-2 text-gray-500 transition-colors hover:text-gray-900"
+        className="mb-3 flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-gray-900 md:mb-4"
       >
         <X className="h-4 w-4" /> ปิดหน้าต่าง
       </button>
 
       <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-        <div className="flex items-center gap-6 bg-linear-to-r from-blue-600 to-indigo-700 p-6 text-white">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white/30 bg-white/20 text-3xl font-bold backdrop-blur-sm">
+        <div className="flex flex-col items-center gap-4 bg-linear-to-r from-blue-600 to-indigo-700 p-4 text-white sm:flex-row sm:gap-6 sm:p-6">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-white/30 bg-white/20 text-2xl font-bold backdrop-blur-sm sm:h-24 sm:w-24 sm:text-3xl">
             {employee.name.charAt(0)}
           </div>
-          <div>
-            <h2 className="mb-1 text-2xl font-bold">{employee.name}</h2>
-            <p className="flex items-center gap-2 text-blue-100">
-              <Briefcase className="h-4 w-4" /> {employee.position} (
-              {employee.department})
+          <div className="text-center sm:text-left">
+            <h2 className="mb-1 text-xl font-bold sm:text-2xl">{employee.name}</h2>
+            <p className="flex items-center justify-center gap-2 text-sm text-blue-100 sm:justify-start">
+              <Briefcase className="h-4 w-4" /> {employee.position}
             </p>
-            <p className="mt-1 flex items-center gap-2 text-sm text-blue-100">
-              <FileBadge className="h-4 w-4" /> รหัส: {employee.id} | เริ่มงาน:{" "}
-              {employee.startDate}
+            <p className="text-xs text-blue-100 sm:text-sm">{employee.department}</p>
+            <p className="mt-2 flex flex-col items-center gap-1 text-xs text-blue-100 sm:flex-row sm:gap-3">
+              <span><FileBadge className="inline h-3 w-3 mr-1" />รหัส: {employee.id}</span>
+              <span className="hidden sm:inline">|</span>
+              <span>เริ่มงาน: {employee.startDate}</span>
             </p>
           </div>
         </div>
@@ -581,9 +636,9 @@ function EmployeeDetail({ employee, onBack }: EmployeeDetailProps) {
           ))}
         </div>
 
-        <div className="min-h-75 bg-gray-50/50 p-6">
+        <div className="min-h-75 bg-gray-50/50 p-4 sm:p-6">
           {activeTab === "info" && (
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:gap-8 md:grid-cols-2">
               <div className="rounded-lg border border-gray-200 bg-white p-5">
                 <h4 className="mb-4 border-b pb-2 font-semibold text-gray-800">
                   ข้อมูลส่วนตัว
@@ -723,78 +778,141 @@ function EmployeeDetail({ employee, onBack }: EmployeeDetailProps) {
 
 function AttendanceView() {
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex flex-col justify-between gap-3 border-b border-gray-100 p-4 sm:gap-4 sm:p-6 md:flex-row md:items-center">
         <div>
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-base font-semibold sm:text-lg">
             บันทึกเวลาทำงาน (ลา / ขาด / สาย)
           </h3>
-          <p className="text-sm text-gray-500">ข้อมูลประจำเดือน ตุลาคม 2566</p>
+          <p className="text-xs text-gray-500 sm:text-sm">ข้อมูลประจำเดือน ตุลาคม 2566</p>
         </div>
         <button
           type="button"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           + บันทึกการลา/สาย
         </button>
       </div>
 
-      <table className="w-full border-collapse text-left text-sm">
-        <thead>
-          <tr className="border-b bg-gray-50">
-            <th className="p-3 font-medium">วันที่</th>
-            <th className="p-3 font-medium">รหัส</th>
-            <th className="p-3 font-medium">ชื่อพนักงาน</th>
-            <th className="p-3 font-medium">ประเภท</th>
-            <th className="p-3 font-medium">รายละเอียด/หมายเหตุ</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {mockAttendance.map((record) => (
-            <tr
-              key={`${record.date}-${record.empId}-${record.type}`}
-              className="hover:bg-gray-50"
-            >
-              <td className="p-3">{record.date}</td>
-              <td className="p-3 text-gray-500">{record.empId}</td>
-              <td className="p-3 font-medium">{record.name}</td>
-              <td className="p-3">
-                <StatusBadge status={record.type} />
-              </td>
-              <td className="p-3 text-gray-600">{record.note}</td>
+      {/* Mobile Card View */}
+      <div className="divide-y divide-gray-100 md:hidden">
+        {mockAttendance.map((record) => (
+          <div key={`${record.date}-${record.empId}-${record.type}`} className="p-4 hover:bg-gray-50">
+            <div className="mb-2 flex items-start justify-between">
+              <div>
+                <p className="font-medium text-gray-900">{record.name}</p>
+                <p className="text-xs text-gray-500">{record.empId}</p>
+              </div>
+              <StatusBadge status={record.type} />
+            </div>
+            <p className="mb-1 text-sm text-gray-600">{record.note}</p>
+            <p className="text-xs text-gray-500">{record.date}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b bg-gray-50">
+              <th className="p-3 font-medium">วันที่</th>
+              <th className="p-3 font-medium">รหัส</th>
+              <th className="p-3 font-medium">ชื่อพนักงาน</th>
+              <th className="p-3 font-medium">ประเภท</th>
+              <th className="p-3 font-medium">รายละเอียด/หมายเหตุ</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {mockAttendance.map((record) => (
+              <tr
+                key={`${record.date}-${record.empId}-${record.type}`}
+                className="hover:bg-gray-50"
+              >
+                <td className="p-3">{record.date}</td>
+                <td className="p-3 text-gray-500">{record.empId}</td>
+                <td className="p-3 font-medium">{record.name}</td>
+                <td className="p-3">
+                  <StatusBadge status={record.type} />
+                </td>
+                <td className="p-3 text-gray-600">{record.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
 function PayrollView() {
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex flex-col justify-between gap-3 border-b border-gray-100 p-4 sm:gap-4 sm:p-6 md:flex-row md:items-center">
         <div>
-          <h3 className="text-lg font-semibold">สรุปเงินเดือนพนักงาน</h3>
-          <p className="text-sm text-gray-500">งวดบัญชี: ตุลาคม 2566</p>
+          <h3 className="text-base font-semibold sm:text-lg">สรุปเงินเดือนพนักงาน</h3>
+          <p className="text-xs text-gray-500 sm:text-sm">งวดบัญชี: ตุลาคม 2566</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <button
             type="button"
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             ส่งออก Excel
           </button>
           <button
             type="button"
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700"
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
           >
-            ยืนยันจ่ายเงินเดือน
+            ยืนยันจ่าย
           </button>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile Card View */}
+      <div className="divide-y divide-gray-100 md:hidden">
+        {mockPayroll.map((payroll) => (
+          <div key={payroll.empId} className="p-4 hover:bg-gray-50">
+            <div className="mb-2">
+              <p className="font-medium text-gray-900">{payroll.name}</p>
+              <p className="text-xs text-gray-500">{payroll.empId}</p>
+            </div>
+            <div className="space-y-1 text-xs text-gray-600 sm:text-sm">
+              <div className="flex justify-between">
+                <span>เงินเดือน:</span>
+                <span>฿{payroll.base.toLocaleString()}</span>
+              </div>
+              {payroll.commission > 0 && (
+                <div className="flex justify-between text-blue-600">
+                  <span>ค่าคอมฯ:</span>
+                  <span>฿{payroll.commission.toLocaleString()}</span>
+                </div>
+              )}
+              {payroll.allowance > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>เบี้ยขยัน:</span>
+                  <span>฿{payroll.allowance.toLocaleString()}</span>
+                </div>
+              )}
+              {payroll.deduct > 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>หัก:</span>
+                  <span>-฿{payroll.deduct.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="border-t border-gray-200 pt-1 font-bold text-blue-800">
+                <div className="flex justify-between">
+                  <span>รับสุทธิ:</span>
+                  <span>฿{payroll.total.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full border-collapse text-left text-sm">
           <thead>
             <tr className="border-b bg-gray-50">
