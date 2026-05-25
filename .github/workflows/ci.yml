@@ -13,6 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/hr_easy?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hr_easy
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U postgres -d hr_easy
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -33,6 +47,12 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      - name: Push Prisma schema
+        run: bunx prisma db push
+
+      - name: Seed database
+        run: bun run prisma/seed.ts
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps
