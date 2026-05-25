@@ -94,6 +94,21 @@ export function formatThaiCurrency(amount: number): string {
   }).format(amount);
 }
 
+export function formatDisplayDate(value: string | Date): string {
+  const date = value instanceof Date ? value : new Date(`${value}T00:00:00Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 export function getCurrentMonthThai(): string {
   const months = [
     "มกราคม",
