@@ -7,7 +7,7 @@ import {
   FileText,
   X,
 } from "lucide-react";
-import { employeeDetailTabs, formatThaiCurrency } from "./hr.constants";
+import { employeeDetailTabs, formatDisplayDate, formatThaiCurrency } from "./hr.constants";
 import type { DetailTabKey, Employee } from "./hr.types";
 import { StatusBadge } from "../../ui/StatusBadge";
 import { TabButton } from "../../ui/TabButton";
@@ -52,7 +52,7 @@ export function EmployeeDetail({
                 รหัส: {employee.id}
               </span>
               <span className="hidden sm:inline">|</span>
-              <span>เริ่มงาน: {employee.startDate}</span>
+              <span>เริ่มงาน: {formatDisplayDate(employee.startDate)}</span>
             </p>
           </div>
         </div>
@@ -139,21 +139,21 @@ export function EmployeeDetail({
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   <tr>
-                    <td className="p-3">2023-10-25</td>
+                    <td className="p-3">{formatDisplayDate("2023-10-25")}</td>
                     <td className="p-3">
                       <StatusBadge status="ลาป่วย" />
                     </td>
                     <td className="p-3 text-gray-600">ไข้หวัดใหญ่</td>
                   </tr>
                   <tr>
-                    <td className="p-3">2023-10-20</td>
+                    <td className="p-3">{formatDisplayDate("2023-10-20")}</td>
                     <td className="p-3">
                       <StatusBadge status="ลาพักร้อน" />
                     </td>
                     <td className="p-3 text-gray-600">ลาตามประสงค์</td>
                   </tr>
                   <tr>
-                    <td className="p-3">2023-10-15</td>
+                    <td className="p-3">{formatDisplayDate("2023-10-15")}</td>
                     <td className="p-3">
                       <StatusBadge status="ปกติ" />
                     </td>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { client } from "../../../lib/api-client";
-import { getCurrentMonthThai } from "./hr.constants";
+import { formatDisplayDate, getCurrentMonthThai } from "./hr.constants";
 import { StatusBadge } from "../../ui/StatusBadge";
 import type { AttendanceRecord } from "./hr.types";
 
@@ -90,7 +90,7 @@ export function AttendanceView() {
               <StatusBadge status={record.type} />
             </div>
             <p className="mb-1 text-sm text-gray-600">{record.note}</p>
-            <p className="text-xs text-gray-500">{record.date}</p>
+            <p className="text-xs text-gray-500">{formatDisplayDate(record.date)}</p>
           </div>
         ))}
       </div>
@@ -112,7 +112,7 @@ export function AttendanceView() {
                 key={`${record.date}-${record.empId}-${record.type}`}
                 className="hover:bg-gray-50"
               >
-                <td className="p-3">{record.date}</td>
+                <td className="p-3">{formatDisplayDate(record.date)}</td>
                 <td className="p-3 text-gray-500">{record.empId}</td>
                 <td className="p-3 font-medium">{record.name}</td>
                 <td className="p-3">

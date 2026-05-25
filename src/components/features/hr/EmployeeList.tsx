@@ -3,7 +3,7 @@
 import { Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { client } from "../../../lib/api-client";
-import { formatThaiCurrency } from "./hr.constants";
+import { formatDisplayDate, formatThaiCurrency } from "./hr.constants";
 import { StatusBadge } from "../../ui/StatusBadge";
 import type { Employee } from "./hr.types";
 
@@ -113,7 +113,9 @@ export function EmployeeList({ onSelect }: EmployeeListProps) {
             <div className="mb-3 space-y-1 text-sm text-gray-600">
               <p>{employee.position}</p>
               <p className="text-xs text-gray-500">{employee.department}</p>
-              <p className="text-xs text-gray-500">เริ่มงาน: {employee.startDate}</p>
+              <p className="text-xs text-gray-500">
+                เริ่มงาน: {formatDisplayDate(employee.startDate)}
+              </p>
               <p className="text-xs text-gray-500">
                 เงินเดือน: {formatThaiCurrency(employee.salary)}
               </p>
@@ -156,7 +158,7 @@ export function EmployeeList({ onSelect }: EmployeeListProps) {
                   <div>{employee.position}</div>
                   <div className="text-xs text-gray-500">{employee.department}</div>
                 </td>
-                <td className="p-4">{employee.startDate}</td>
+                <td className="p-4">{formatDisplayDate(employee.startDate)}</td>
                 <td className="p-4">{formatThaiCurrency(employee.salary)}</td>
                 <td className="p-4">
                   <StatusBadge status={employee.status} />
