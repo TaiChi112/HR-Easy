@@ -1,45 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { client } from "../../../lib/api-client";
+
+import useSWR from "swr";
+import { client, unwrapEdenResponse } from "../../../lib/api-client";
 import { formatDisplayDate, getCurrentMonthThai } from "./hr.constants";
 import { StatusBadge } from "../../ui/StatusBadge";
 import type { AttendanceRecord } from "./hr.types";
 
 export function AttendanceView() {
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadAttendance() {
-      setIsLoading(true);
-      setErrorMessage(null);
-
-      const response = await client.api.hr.attendance.get();
-
-      if (!isActive) {
-        return;
-      }
-
-      if (response.error) {
-        setErrorMessage("ไม่สามารถโหลดข้อมูลการเข้างานได้");
-        setIsLoading(false);
-        return;
-      }
-
-      setAttendance(response.data ?? []);
-      setIsLoading(false);
-    }
-
-    void loadAttendance();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
+  const { data: attendance = [], error, isLoading } = useSWR<AttendanceRecord[]>(
+    "hr-attendance",
+    () => unwrapEdenResponse(client.api.hr.attendance.get()),
+  );
 
   if (isLoading) {
     return (
@@ -49,10 +21,10 @@ export function AttendanceView() {
     );
   }
 
-  if (errorMessage) {
+  if (error) {
     return (
       <div className="rounded-xl border border-red-100 bg-red-50 p-5 text-sm text-red-700 shadow-sm">
-        {errorMessage}
+        {error instanceof Error ? error.message : "ไม่สามารถโหลดข้อมูลการเข้างานได้"}
       </div>
     );
   }
