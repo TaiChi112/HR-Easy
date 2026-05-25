@@ -8,8 +8,8 @@ import {
   LayoutDashboard,
   Plus,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { client } from "../../../lib/api-client";
+import useSWR from "swr";
+import { client, unwrapEdenResponse } from "../../../lib/api-client";
 import { StatCard } from "../../ui/StatCard";
 import { StatusBadge } from "../../ui/StatusBadge";
 import { dashboardStats } from "./hr.constants";
@@ -26,51 +26,15 @@ type DashboardData = {
 };
 
 export function DashboardView({ onNavigate }: DashboardViewProps) {
-  const [data, setData] = useState<DashboardData>({
-    employees: [],
-    attendance: [],
-    payroll: [],
+  const { data, error, isLoading } = useSWR<DashboardData>("hr-dashboard", async () => {
+    const [employees, attendance, payroll] = await Promise.all([
+      unwrapEdenResponse(client.api.hr.employees.get()),
+      unwrapEdenResponse(client.api.hr.attendance.get()),
+      unwrapEdenResponse(client.api.hr.payroll.get()),
+    ]);
+
+    return { employees, attendance, payroll };
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadDashboardData() {
-      setIsLoading(true);
-      setErrorMessage(null);
-
-      const [employeesResponse, attendanceResponse, payrollResponse] = await Promise.all([
-        client.api.hr.employees.get(),
-        client.api.hr.attendance.get(),
-        client.api.hr.payroll.get(),
-      ]);
-
-      if (!isActive) {
-        return;
-      }
-
-      if (employeesResponse.error || attendanceResponse.error || payrollResponse.error) {
-        setErrorMessage("ไม่สามารถโหลดข้อมูลแดชบอร์ดได้");
-        setIsLoading(false);
-        return;
-      }
-
-      setData({
-        employees: employeesResponse.data ?? [],
-        attendance: attendanceResponse.data ?? [],
-        payroll: payrollResponse.data ?? [],
-      });
-      setIsLoading(false);
-    }
-
-    void loadDashboardData();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
 
   if (isLoading) {
     return (
@@ -80,34 +44,43 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
     );
   }
 
-  if (errorMessage) {
+  if (error) {
     return (
       <div className="rounded-xl border border-red-100 bg-red-50 p-5 text-sm text-red-700 shadow-sm">
-        {errorMessage}
+        {error instanceof Error ? error.message : "ไม่สามารถโหลดข้อมูลแดชบอร์ดได้"}
       </div>
     );
   }
 
+  const dashboardData: DashboardData =
+    data ?? {
+      employees: [],
+      attendance: [],
+      payroll: [],
+    };
+
   const stats = dashboardStats.map((stat) => {
     if (stat.target === "employees") {
-      return { ...stat, value: String(data.employees.length) };
+      return { ...stat, value: String(dashboardData.employees.length) };
     }
 
     if (stat.title === "ลางานวันนี้") {
       return {
         ...stat,
-        value: String(data.attendance.filter((record) => record.type === "ลาพักร้อน").length),
+        value: String(
+          dashboardData.attendance.filter((record) => record.type === "ลาพักร้อน").length,
+        ),
       };
     }
 
     if (stat.title === "มาสายวันนี้") {
       return {
         ...stat,
-        value: String(data.attendance.filter((record) => record.type === "มาสาย").length),
+        value: String(dashboardData.attendance.filter((record) => record.type === "มาสาย").length),
       };
     }
 
-    return { ...stat, value: String(data.payroll.length) };
+    return { ...stat, value: String(dashboardData.payroll.length) };
   });
 
   return (
@@ -140,7 +113,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
             </button>
           </div>
           <div className="space-y-3">
-            {data.attendance.slice(0, 3).map((item) => (
+            {dashboardData.attendance.slice(0, 3).map((item) => (
               <div
                 key={`${item.date}-${item.empId}-${item.type}`}
                 className="flex items-center justify-between rounded-lg border border-gray-50 p-3 hover:bg-gray-50"
