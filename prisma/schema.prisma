@@ -15,9 +15,26 @@ model Employee {
   startDate  String  @db.VarChar(10)
   salary     Int
   status     String  @db.VarChar(20)
+  discordId  String? @unique
 
   attendance Attendance[]
   payroll    Payroll[]
+  leaveRequests LeaveRequest[]
+}
+
+model LeaveRequest {
+  id         String   @id @default(uuid())
+  employeeId String
+  type       String
+  startDate  DateTime
+  endDate    DateTime
+  reason     String
+  status     String   @default("Pending")
+  createdAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
 }
 
 model Attendance {
