@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Plus,
 } from "lucide-react";
+import Link from "next/link";
 import useSWR from "swr";
 import { client, unwrapEdenResponse } from "../../../lib/api-client";
 import { StatCard } from "../../ui/StatCard";
@@ -155,13 +156,13 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               <AlertTriangle className="mb-2 h-6 w-6" />
               <span className="text-sm font-medium">ตักเตือน</span>
             </button>
-            <button
-              type="button"
+            <Link
+              href="/dashboard/leaves"
               className="flex flex-col items-center justify-center rounded-lg bg-purple-50 p-4 text-purple-700 transition-colors hover:bg-purple-100 focus-visible:ring-2 focus-visible:ring-purple-500"
             >
               <CalendarClock className="mb-2 h-6 w-6" />
               <span className="text-sm font-medium">อนุมัติลา</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
