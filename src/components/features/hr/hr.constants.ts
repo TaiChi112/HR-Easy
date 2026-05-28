@@ -19,7 +19,11 @@ type DashboardStatDefinition = {
 
 export const menuItems: MenuDefinition[] = [
   { key: "dashboard", label: "แดชบอร์ด", icon: LayoutDashboard },
-  { key: "employees", label: "ทะเบียนพนักงาน", icon: Users },
+  {
+    key: "employees",
+    label: "ทะเบียนพนักงาน",
+    icon: Users,
+  },
   {
     key: "attendance",
     label: "เวลาทำงาน & การลา",
